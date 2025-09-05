@@ -1,45 +1,14 @@
-# ==============================
-# Stage 1: Dependencies
-# ==============================
-FROM maven:3.9.6-eclipse-temurin-17 AS deps
-WORKDIR /app
-
-# Copy only pom.xml first to cache dependencies
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
-
-
-# ==============================
-# Stage 2: Build
-# ==============================
+# Stage 1: build with Maven
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-
-# Copy full project
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 COPY . .
+RUN mvn clean package -DskipTests
 
-# Copy cached dependencies
-COPY --from=deps /root/.m2 /root/.m2
-
-# Build JAR and generate dependency list
-RUN mvn -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list package
-
-
-# ==============================
-# Stage 3: Runtime (Railway-ready)
-# ==============================
+# Stage 2: run with lightweight JDK
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
-
-# Copy the final JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
-
-# Copy dependency log (optional, for debugging)
-COPY --from=build /app/target/mvn-dependency-list.log mvn-dependency-list.log
-
-# Railway sets PORT dynamically
-ENV PORT=8080
-EXPOSE ${PORT}
-
-# Run app with dynamic port + memory limits
+EXPOSE 8080
 CMD ["sh", "-c", "java -Xmx512m -Xms256m -jar app.jar --server.port=${PORT}"]
