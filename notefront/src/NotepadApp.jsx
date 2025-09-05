@@ -22,7 +22,7 @@ export default function NotepadApp() {
 
   async function fetchNotes() {
     try {
-      const res = await fetch("simplenotes-production.up.railway.app");
+      const res = await fetch("https://simplenotes-production.up.railway.app/");
       const data = await res.json();
       setNotes(data);
     } catch (err) {
@@ -34,7 +34,7 @@ export default function NotepadApp() {
     e.preventDefault();
     const newNote = { title, content, tag, date: new Date().toISOString() };
 
-    await fetch("http://localhost:8080/api/notes", {
+    await fetch("https://simplenotes-production.up.railway.app/api/notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newNote),
@@ -48,7 +48,7 @@ export default function NotepadApp() {
   }
 
   async function deleteNote(id) {
-    await fetch(`http://localhost:8080/api/notes/${id}`, {
+    await fetch(`https://simplenotes-production.up.railway.app/api/notes/${id}`, {
       method: "DELETE",
     });
     fetchNotes();
