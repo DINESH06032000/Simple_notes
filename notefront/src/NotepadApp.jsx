@@ -22,7 +22,7 @@ export default function NotepadApp() {
 
   async function fetchNotes() {
     try {
-      const res = await fetch("https://simplenotes-production.up.railway.app/");
+      const res = await fetch("https://simplenotes-production.up.railway.app/api/notes");
       const data = await res.json();
       setNotes(data);
     } catch (err) {
